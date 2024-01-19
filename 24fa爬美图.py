@@ -36,6 +36,23 @@ import requests
 from bs4 import BeautifulSoup
 import os
 import lxml
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
+# 定义一个重试函数，用于发送请求并处理异常
+def retry_request(url, session, timeout, max_retries, backoff_factor):
+    # 创建一个重试策略
+    retry = Retry(total=max_retries, backoff_factor=backoff_factor, status_forcelist=[500, 502, 503, 504])
+    # 创建一个适配器，将重试策略应用到会话对象上
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    # 发送请求，并返回响应或者异常
+    try:
+        response = session.get(url, timeout=timeout)
+        return response
+    except requests.exceptions.RequestException as e:
+        return e
 
 # 在脚本所在目录下创建 美女图集 文件夹，如果存在则忽略
 folder = "美女图集"
@@ -46,21 +63,32 @@ else:
     print(f"{folder} 文件夹已存在")
 
 # 定义 a_url 为 https://www.248.one/
-a_url = "https://www.24fa.vip/"
+a_url = "https://www.248.one/"
 
 # 拼接 a_url 和 c49.aspx 得到 b_url
 b_url = a_url + "c49.aspx"
 print(f"b_url 为 {b_url}")
 
-# 请求 b_url 若为 200 且有内容则返回 b_url_content
-b_url_response = requests.get(b_url)
-if b_url_response.status_code == 200 and b_url_response.content:
-    b_url_content = b_url_response.content
-    print(f"请求 b_url 成功，返回 b_url_content")
-else:
-    print(f"请求 b_url 失败，退出程序")
-    exit()
+# 创建一个会话对象
+session = requests.Session()
+# 请求 b_url，设置超时时间为 5 秒，最大重试次数为 3 次，重试间隔因子为 2
+b_url_response = retry_request(b_url, session, 5, 3, 2)
 
+# 判断 b_url_response 是否为 requests.Response 类型，如果是，说明请求成功，否则，说明请求失败
+if isinstance(b_url_response, requests.Response):
+    # 请求 b_url 若为 200 且有内容则返回 b_url_content
+    b_url_response = requests.get(b_url)
+    if b_url_response.status_code == 200 and b_url_response.content:
+        b_url_content = b_url_response.content
+        print(f"请求 b_url 成功，返回 b_url_content")
+    else:
+        print(f"请求 b_url 失败，退出程序")
+        exit()
+else:
+    # 如果请求失败，打印异常信息，退出程序
+    print(f"请求 b_url 失败，异常信息为：{b_url_response}")
+    exit()
+    
 # 从 b_url_content 中的 <div class="conL"></div> 中获得总页数 b_pager
 b_url_soup = BeautifulSoup(b_url_content, "lxml")
 b_url_div = b_url_soup.find("div", class_="conL")
@@ -79,15 +107,24 @@ for i in range(1, b_pager + 1):
     b_url_pager = b_url_cut + f"p{i}.aspx"
     print(f"拼接 b_url_cut 和 b_pager 得到 b_url_pager 为 {b_url_pager}")
 
-    # 请求 b_url_pager  若为 200 且有内容则返回 b_url_content
-    b_url_pager_response = requests.get(b_url_pager)
-    if b_url_pager_response.status_code == 200 and b_url_pager_response.content:
-        b_url_pager_content = b_url_pager_response.content
-        print(f"请求 b_url_pager 成功，返回 b_url_pager_content")
-    else:
-        print(f"请求 b_url_pager 失败，跳过该页")
-        continue
+    # 请求 b_url_pager，设置超时时间为 5 秒，最大重试次数为 3 次，重试间隔因子为 2
+    b_url_pager_response = retry_request(b_url_pager, session, 5, 3, 2)
 
+    # 判断 b_url_pager_response 是否为 requests.Response 类型，如果是，说明请求成功，否则，说明请求失败
+    if isinstance(b_url_pager_response, requests.Response):
+        # 请求 b_url_pager  若为 200 且有内容则返回 b_url_content
+        b_url_pager_response = requests.get(b_url_pager)
+        if b_url_pager_response.status_code == 200 and b_url_pager_response.content:
+            b_url_pager_content = b_url_pager_response.content
+            print(f"请求 b_url_pager 成功，返回 b_url_pager_content")
+        else:
+            print(f"请求 b_url_pager 失败，跳过该页")
+            continue
+    else:
+        # 如果请求失败，打印异常信息，跳过该页
+        print(f"请求 b_url_pager 失败，异常信息为：{b_url_pager_response}")
+        continue
+    
     # 从 b_url_pager_content 中的 <div class="conL"></div> 中匹配获得以下两个内容
     #     n 开头 .aspx 结尾的全部文本 b_url_pager_content_text
     #     标题 b_url_pager_content_title
@@ -107,15 +144,24 @@ for i in range(1, b_pager + 1):
         c_url = a_url + b_url_pager_content_text[j]
         print(f"拼接 a_url 和 b_url_pager_content_text 得到 c_url 为 {c_url}")
 
-        # 请求 c_url 若为 200 且有内容则返回 c_url_content
-        c_url_response = requests.get(c_url)
-        if c_url_response.status_code == 200 and c_url_response.content:
-            c_url_content = c_url_response.content
-            print(f"请求 c_url 成功，返回 c_url_content")
-        else:
-            print(f"请求 c_url 失败，跳过该文本")
-            continue
+        # 请求 c_url，设置超时时间为 5 秒，最大重试次数为 3 次，重试间隔因子为 2
+        c_url_response = retry_request(c_url, session, 5, 3, 2)
 
+        # 判断 c_url_response 是否为 requests.Response 类型，如果是，说明请求成功，否则，说明请求失败
+        if isinstance(c_url_response, requests.Response):
+            # 请求 c_url 若为 200 且有内容则返回 c_url_content
+            c_url_response = requests.get(c_url)
+            if c_url_response.status_code == 200 and c_url_response.content:
+                c_url_content = c_url_response.content
+                print(f"请求 c_url 成功，返回 c_url_content")
+            else:
+                print(f"请求 c_url 失败，跳过该文本")
+                continue
+        else:
+            # 如果请求失败，打印异常信息，跳过该文本
+            print(f"请求 c_url 失败，异常信息为：{c_url_response}")
+            continue
+        
         # 从 c_url_content 中的 <div id="printBody" style="word-break:break-all;"></div> 中获得总页数 c_pager
         c_url_soup = BeautifulSoup(c_url_content, "lxml")
         c_url_div = c_url_soup.find("div", id="printBody", style="word-break:break-all;").find("div",class_="pager")
@@ -143,15 +189,22 @@ for i in range(1, b_pager + 1):
             c_url_pager = c_url_cut + f"p{k}.aspx"
             print(f"拼接 c_url_cut 和 c_pager 得到 c_url_pager 为 {c_url_pager}")
 
-            # 请求 c_url_pager  若为 200 且有内容则返回 c_url_content
-            c_url_pager_response = requests.get(c_url_pager)
-            if c_url_pager_response.status_code == 200 and c_url_pager_response.content:
-                c_url_pager_content = c_url_pager_response.content
-                print(f"请求 c_url_pager 成功，返回 c_url_pager_content")
-            else:
-                print(f"请求 c_url_pager 失败，跳过该页")
-                continue
+            # 请求 c_url_pager，设置超时时间为 5 秒，最大重试次数为 3 次，重试间隔因子为 2
+            c_url_pager_response = retry_request(c_url_pager, session, 5, 3, 2)
 
+            # 判断 c_url_pager_response 是否为 requests.Response 类型，如果是，说明请求成功，否则，说明请求失败
+            if isinstance(c_url_pager_response, requests.Response):
+                # 如果请求成功，判断状态码是否为 200，且响应内容是否存在
+                if c_url_pager_response.status_code == 200 and c_url_pager_response.content:
+                    c_url_pager_content = c_url_pager_response.content
+                    print(f"请求 c_url_pager 成功，返回 c_url_pager_content")
+                else:
+                    print(f"请求 c_url_pager 失败，跳过该页")
+                    continue
+            else:
+                # 如果请求失败，打印异常信息，跳过该页
+                print(f"请求 c_url_pager 失败，异常信息为：{c_url_pager_response}")
+                continue
             # 从 c_url_pager_content 中的 <div id="printBody" style="word-break:break-all;"></div> 中匹配获得 upload 开头 .jpg_gzip.aspx 结尾的全部文本 c_url_pager_content_text
             c_url_pager_soup = BeautifulSoup(c_url_pager_content, "lxml")
             c_url_pager_div = c_url_pager_soup.find("div", id="printBody", style="word-break:break-all;")
@@ -172,12 +225,19 @@ for i in range(1, b_pager + 1):
                 # 请求 d_url 获取图片并保存到 b_url_pager_content_title 目录并命名为 filename，如果存在则跳过
                 file_path = os.path.join(subfolder_path, filename)
                 if not os.path.exists(file_path):
-                    d_url_response = requests.get(d_url)
-                    if d_url_response.status_code == 200 and d_url_response.content:
-                        with open(file_path, "wb") as f:
-                            f.write(d_url_response.content)
-                            print(f"请求 d_url 成功，保存图片到 {file_path}")
+                    # 请求 c_url_pager，设置超时时间为 5 秒，最大重试次数为 3 次，重试间隔因子为 2
+                    d_url_response = retry_request(d_url, session, 5, 3, 2)
+                    # 判断 c_url_pager_response 是否为 requests.Response 类型，如果是，说明请求成功，否则，说明请求失败
+                    if isinstance(d_url_response, requests.Response):
+                        # 如果请求成功，判断状态码是否为 200，且响应内容是否存在
+                        if d_url_response.status_code == 200 and d_url_response.content:
+                            with open(file_path, "wb") as f:
+                                f.write(d_url_response.content)
+                                print(f"请求 d_url 成功，保存图片到 {file_path}")
+                        else:
+                            print(f"请求 d_url 失败，跳过该图片")
                     else:
-                        print(f"请求 d_url 失败，跳过该图片")
+                        # 如果请求失败，打印异常信息，跳过该图片
+                        print(f"请求 d_url 失败，异常信息为：{d_url_response}")
                 else:
                     print(f"{file_path} 已存在，跳过该图片")
