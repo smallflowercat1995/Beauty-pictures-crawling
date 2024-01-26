@@ -190,6 +190,3 @@ for i in range(1, b_pager + 1):
 
             # 返回上一级目录
             os.chdir("..")
-
-        # 返回上一级目录
-        os.chdir("..")
