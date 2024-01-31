@@ -40,7 +40,8 @@
 import os
 os.makedirs("美女图集", exist_ok=True)
 os.chdir("美女图集")
-
+base_path = os.path.abspath('.')
+print(base_path)
 # 创建重试函数，为了规避网络问题导致的 tls 报错
 import requests
 from requests.adapters import HTTPAdapter
@@ -114,8 +115,10 @@ for i in range(1, b_pager + 1):
 
     # 在当前目录下创建 b_url_content_title 目录，存在则忽略，并进入目录
     for j in range(b_url_content_text_count):
-        os.makedirs(b_url_content_title[j], exist_ok=True)
-        os.chdir(b_url_content_title[j])
+        b_url_content_title_path = os.path.join(base_path, b_url_content_title[j])
+        os.makedirs(b_url_content_title_path, exist_ok=True)
+        os.chdir(b_url_content_title_path)
+        print(b_url_content_title_path)
         # 拼接 a_url 和 b_url_content_text 中的每一个文本得到 c_url
         c_url = a_url + b_url_content_text[j]
         # 请求 c_url 若为 200 且有内容则返回 c_url_content
@@ -176,4 +179,4 @@ for i in range(1, b_pager + 1):
                             f.write(response.content)
 
         # 返回上一级目录
-        os.chdir("..")
+        os.chdir(os.path.join(b_url_content_title_path, ".."))

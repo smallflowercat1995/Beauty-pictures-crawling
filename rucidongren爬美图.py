@@ -39,8 +39,6 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-
-
 def retry_request(url, max_retries=3, backoff_factor=0.3):
     # 设置请求头，模拟浏览器访问
     headers = {
@@ -58,6 +56,9 @@ def retry_request(url, max_retries=3, backoff_factor=0.3):
 # 在脚本所在目录下创建 图集 文件夹，如果存在则忽略
 os.makedirs("美女图集", exist_ok=True)
 os.chdir("美女图集")
+base_path = os.path.abspath('.')
+print(base_path)
+
 # 定义 a_url 为 https://rucidongren.neocities.org/
 a_url = "https://rucidongren.neocities.org/"
 
@@ -107,8 +108,10 @@ for i in range(1, b_pager + 1):
     # 从 1 开始循环便利总页数到 b_url_a_count 范围 [1,b_url_a_count]
     for j in range(b_url_a_count):
         # 在当前目录下创建对应的 b_url_a_name 目录并进入目录，如果存在则忽略
-        os.makedirs(b_url_a_name[j], exist_ok=True)
-        os.chdir(b_url_a_name[j])
+        b_url_a_name_path = os.path.join(base_path, b_url_a_name[j])
+        os.makedirs(b_url_a_name_path, exist_ok=True)
+        os.chdir(b_url_a_name_path)
+        print(b_url_a_name_path)
         # 请求对应的链接 b_url_a 若为 200 且有内容则返回 b_url_a_content
         b_url_a_content = None
         response = retry_request(b_url_a[j])
@@ -157,8 +160,10 @@ for i in range(1, b_pager + 1):
             # 从 1 开始循环便利总页数到 b_url_a_pager_url_link_count 范围 [1,b_url_a_pager_url_link_count]
             for l in range(b_url_a_pager_url_link_count):
                 # 创建对应的 b_url_a_pager_url_name 目录并进入目录，如果存在则忽略
-                os.makedirs(b_url_a_pager_url_name[l], exist_ok=True)
-                os.chdir(b_url_a_pager_url_name[l])
+                b_url_a_pager_url_name_path = os.path.join(b_url_a_name_path, b_url_a_pager_url_name[l])
+                os.makedirs(b_url_a_pager_url_name_path, exist_ok=True)
+                os.chdir(b_url_a_pager_url_name_path)
+                print(b_url_a_pager_url_name_path)
                 # 请求对应的链接 b_url_a_pager_url_link 若为 200 且有内容则返回 b_url_a_pager_url_link_content
                 b_url_a_pager_url_link_content = None
                 response = retry_request(b_url_a_pager_url_link[l])
@@ -186,7 +191,6 @@ for i in range(1, b_pager + 1):
                                 f.write(response.content)
 
                 # 返回上一级目录
-                os.chdir("..")
-
-            # 返回上一级目录
-            os.chdir("..")
+                os.chdir(os.path.join(b_url_a_pager_url_name_path, ".."))
+        # 返回上一级目录
+        os.chdir(os.path.join(b_url_a_name_path, ".."))
