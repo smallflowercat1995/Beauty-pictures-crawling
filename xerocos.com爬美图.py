@@ -156,6 +156,7 @@ for i in range(1, a_pager + 1):
                             d_content = request_with_retry(d_url)
                             with open(d_path, 'wb') as f:
                                 f.write(d_content)
+                        else:
+                            print('文件已存在')
                         print('休息3s')
                         time.sleep(3)
-                        print('文件已存在')
