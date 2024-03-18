@@ -8,7 +8,7 @@
     从 a_content 中最后一个 <div class="flex space-x-2"></div> 元素中获得<div class="hidden md:block"></div> 并从中获取 <a class="hover:bg-pink-500 bg-gray-700 relative inline-flex items-center px-4 py-2 border border-pink-500 text-xs font-medium rounded-md text-gray-100" href="">Last</a> 从 href 属性中得到总页数(比如得到了 /?page=226 则返回总页数 226) a_pager
 
     从 1 开始循环便利总页数到 a_pager 范围 [1,a_pager+1]
-    当为 1 则 a_url 赋值给 a_pager_url 直接请求若为 200 且有内容则返回 a_pager_url_content
+    当为 1 则拼接 a_url 对应的链接赋值给 a_pager_url ，将 a_content 赋值给 a_pager_url_content
     当不为1 则拼接 a_url + a_pager 得到类似 https://xerocos.com/?page=2 的拼接其中 /?page=2 代表第2页之后的拼接以此类推，得到拼接 a_pager_url ，请求 a_pager_url 若为 200 且有内容则返回 a_pager_url_content
     
     从 a_pager_url_content 中 <div class="group flex-shrink-0 pb-3"></div> 中匹配 <div class="pt-2"></div> 中匹配 <div class="flex items-center flex-wrap"></div> 中匹配 <a href=""></a> 提取全部的链接 b_url 和对应链接名 b_name 并统计返回数量 b_count
@@ -20,7 +20,7 @@
     从 b_content 中最后一个 <div class="flex space-x-2"></div> 元素中获得<div class="hidden md:block"></div> 并从中获取 <a class="hover:bg-pink-500 bg-gray-700 relative inline-flex items-center px-4 py-2 border border-pink-500 text-xs font-medium rounded-md text-gray-100" href="">Last</a> 从 href 属性中得到总页数(比如得到了 /?page=226 则返回总页数 226) b_pager ，如果没有获取到 <div class="flex space-x-2"></div> 则说明只有1页默认返回 1 即 b_pager=1
 
     从 1 开始循环便利总页数到 b_pager 范围 [1,b_pager+1]
-    当为 1 则拼接 a_url+b_url 对应的链接赋值给 a_b_pager_url 直接请求若为 200 且有内容则返回 a_b_pager_url_content
+    当为 1 则拼接 a_url+b_url 对应的链接赋值给 a_b_pager_url，将 b_content 赋值给 a_b_pager_url_content
     当不为 1 则拼接 a_url+b_url 和 b_pager 得到类似 https://xerocos.com/tag/bowsette?page=2 的拼接，其中 https://xerocos.com 是 a_url，/tag/bowsette 是 b_url， ?page=2 代表第2页之后的拼接以此类推，得到拼接 a_b_pager_url 并请求，若为 200 且有内容则返回 a_b_pager_url_content
     
     从 a_b_pager_url_content 中获取 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-6"></div> 元素并从中匹配全部的 <div class="group flex-shrink-0 pb-3"></div> 中匹配 <div class="relative overflow-hidden rounded-sm shadow-xl latest-card"></div> 中匹配  <a href=""></a> 的链接 c_url 和 <a href=""></a> 中匹配 <img alt="" class="duration-100 ease-in-out group-hover:opacity-75 scale-100 blur-0 grayscale-0" src=""> 的 alt 文件夹名 c_name 并统计总数量 c_count
@@ -32,7 +32,7 @@
     从 c_content 中最后一个 <div class="flex items-center my-2 flex-wrap"></div> 元素中获取最后一个 <a rel="" class="" href="" one-link-mark=""></a> 元素并得到文本值总页数(比如得到了 2 则返回总页数 2) c_pager ，如果没有获取到 <div class="flex items-center my-2 flex-wrap"></div> 则说明只有1页默认返回 1 即 c_pager=1
 
     从 1 开始循环便利总页数到 c_pager 范围 [1,c_pager+1]
-    当为 1 则拼接 a_url+c_url 对应的链接赋值给 a_c_pager_url 直接请求若为 200 且有内容则返回 a_c_pager_url_content
+    当为 1 则拼接 a_url+c_url 对应的链接赋值给 a_c_pager_url ，将 c_content 赋值给 a_c_pager_url_content
     当不为 1 则拼接 a_url+c_url 和 c_pager 得到类似 https://xerocos.com/view/nagisa-bowsette?page=2 的拼接，其中 https://xerocos.com 是 a_url ，/view/nagisa-bowsette 是 c_url ， ?page=2 代表第2页之后的拼接以此类推，得到拼接 a_c_pager_url 并请求，若为 200 且有内容则返回 a_c_pager_url_content
     
     从 a_c_pager_url_content 中的 <div class="max-w-7xl mx-auto px-4 w-full"></div> 中匹配 <div class="md:px-16 xl:px-20 max-w-3xl mx-auto justify-center items-center flex flex-col min-h-screen"></div> 的 <div></div> 的 <img alt="" class="" src="" data-src="" > 中匹配 data-src 获取全部图片链接 d_url ，并得到图片链接总数量 d_count
@@ -45,12 +45,15 @@ import os,time
 import requests
 from bs4 import BeautifulSoup
 
+# 安装必备包 python -m pip install --upgrade pip ; python -m pip install bs4 requests
+
 # 在脚本所在目录下创建 美女图集 文件夹并进入文件夹，如果存在则忽略创建直接进入目录
 if not os.path.exists("美女图集"):
     os.makedirs("美女图集")
 os.chdir("美女图集")
 a_name = os.path.abspath('.')
 print(f'总路径：{a_name}')
+
 # 定义 a_url 为 https://xerocos.com
 a_url = "https://xerocos.com"
 
@@ -75,12 +78,18 @@ a_pager = int(last_page_link['href'].split('=')[-1]) if last_page_link else 1
 print(f'总网址：{a_url}，总页数：{a_pager}')
 # 从 1 开始循环便利总页数到 a_pager 范围 [1,a_pager+1]
 for i in range(1, a_pager + 1):
-    # 当为 1 则 a_url 赋值给 a_pager_url 直接请求若为 200 且有内容则返回 a_pager_url_content
+    # 当为 1 则拼接 a_url 对应的链接赋值给 a_pager_url ，将 a_content 赋值给 a_pager_url_content
     # 当不为1 则拼接 a_url + a_pager 得到类似 https://xerocos.com/?page=2 的拼接其中 /?page=2 代表第2页之后的拼接以此类推，得到拼接 a_pager_url ，请求 a_pager_url 若为 200 且有内容则返回 a_pager_url_content
-    a_pager_url = a_url if i == 1 else f"{a_url}/?page={i}"
-    print(f'第{i}页，网址：{a_pager_url}')
-    a_pager_url_content = request_with_retry(a_pager_url)
+    if i == 1:
+        # 当为 1 则拼接 a_url 对应的链接赋值给 a_pager_url
+        a_pager_url = a_url
+        # 当为 1 则直接使用 a_content 赋值给 a_pager_content
+        a_pager_url_content = a_content
+    else:
+        a_pager_url = f"{a_url}/?page={i}"
+        a_pager_url_content = request_with_retry(a_pager_url)
 
+    print(f'第{i}页，网址：{a_pager_url}')
     # 从 a_pager_url_content 中 <div class="group flex-shrink-0 pb-3"></div> 中匹配 <div class="pt-2"></div> 中匹配 <div class="flex items-center flex-wrap"></div> 中匹配 <a href=""></a> 提取全部的链接 b_url 和对应链接名 b_name 并统计返回数量 b_count
     soup = BeautifulSoup(a_pager_url_content, 'html.parser')
     links = soup.select('div.group.flex-shrink-0.pb-3 div.pt-2 div.flex.items-center.flex-wrap a[href]')
@@ -106,10 +115,16 @@ for i in range(1, a_pager + 1):
         print(f'第{j+1}条，网址：{b_url}，总页数：{b_pager}')
         # 从 1 开始循环便利总页数到 b_pager 范围 [1,b_pager+1]
         for k in range(1, b_pager + 1):
-            # 当为 1 则拼接 a_url+b_url 对应的链接赋值给 a_b_pager_url 直接请求若为 200 且有内容则返回 a_b_pager_url_content
+            # 当为 1 则拼接 a_url+b_url 对应的链接赋值给 a_b_pager_url，将 b_content 赋值给 a_b_pager_url_content
             # 当不为 1 则拼接 a_url+b_url 和 b_pager 得到类似 https://xerocos.com/tag/bowsette?page=2 的拼接，其中 https://xerocos.com 是 a_url，/tag/bowsette 是 b_url， ?page=2 代表第2页之后的拼接以此类推，得到拼接 a_b_pager_url 并请求，若为 200 且有内容则返回 a_b_pager_url_content
-            a_b_pager_url = b_url if k == 1 else f"{b_url}?page={k}"
-            a_b_pager_url_content = request_with_retry(a_b_pager_url)
+            if k == 1:
+                # 当为 1 则拼接 a_url+b_url 对应的链接赋值给 a_b_pager_url
+                a_b_pager_url = b_url
+                # 当为 1 则将 b_content 赋值给 a_b_pager_url_content
+                a_b_pager_url_content = b_content
+            else:
+                a_b_pager_url = f"{b_url}?page={k}"
+                a_b_pager_url_content = request_with_retry(a_b_pager_url)
             # 从 a_b_pager_url_content 中获取 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-6"></div> 元素并从中匹配全部的 <div class="group flex-shrink-0 pb-3"></div> 中匹配 <div class="relative overflow-hidden rounded-sm shadow-xl latest-card"></div> 中匹配  <a href=""></a> 的链接 c_url 和 <a href=""></a> 中匹配 <img alt="" class="duration-100 ease-in-out group-hover:opacity-75 scale-100 blur-0 grayscale-0" src=""> 的 alt 文件夹名 c_name 并统计总数量 c_count
             soup = BeautifulSoup(a_b_pager_url_content, 'html.parser')
             links = soup.select('div.grid.grid-cols-2.md\\:grid-cols-3.lg\\:grid-cols-4.gap-4.pb-6 div.group.flex-shrink-0.pb-3 div.relative.overflow-hidden.rounded-sm.shadow-xl.latest-card a[href]')
@@ -135,10 +150,17 @@ for i in range(1, a_pager + 1):
                 c_pager = int(last_page_link.text) if last_page_link else 1
                 # 从 1 开始循环便利总页数到 c_pager 范围 [1,c_pager+1]
                 for m in range(1, c_pager + 1):
-                    # 当为 1 则拼接 a_url+c_url 对应的链接赋值给 a_c_pager_url 直接请求若为 200 且有内容则返回 a_c_pager_url_content
+                    # 当为 1 则拼接 a_url+c_url 对应的链接赋值给 a_c_pager_url ，将 c_content 赋值给 a_c_pager_url_content
                     # 当不为 1 则拼接 a_url+c_url 和 c_pager 得到类似 https://xerocos.com/view/nagisa-bowsette?page=2 的拼接，其中 https://xerocos.com 是 a_url ，/view/nagisa-bowsette 是 c_url ， ?page=2 代表第2页之后的拼接以此类推，得到拼接 a_c_pager_url 并请求，若为 200 且有内容则返回 a_c_pager_url_content
-                    a_c_pager_url = c_url if m == 1 else f"{c_url}?page={m}"
-                    a_c_pager_url_content = request_with_retry(a_c_pager_url)
+
+                    if m == 1:
+                        # 当为 1 则拼接 a_url+c_url 对应的链接赋值给 a_c_pager_url
+                        a_c_pager_url = c_url
+                        # 当为 1 则将 c_content 赋值给 a_c_pager_url_content
+                        a_c_pager_url_content = c_content
+                    else:
+                        a_c_pager_url = f"{c_url}?page={m}"
+                        a_c_pager_url_content = request_with_retry(a_c_pager_url)
 
                     # 从 a_c_pager_url_content 中的 <div class="max-w-7xl mx-auto px-4 w-full"></div> 中匹配 <div class="md:px-16 xl:px-20 max-w-3xl mx-auto justify-center items-center flex flex-col min-h-screen"></div> 的 <div></div> 的 <img alt="" class="" src="" data-src="" > 中匹配 data-src 获取全部图片链接 d_url ，并得到图片链接总数量 d_count
                     soup = BeautifulSoup(a_c_pager_url_content, 'html.parser')
