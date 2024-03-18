@@ -1,5 +1,6 @@
 # Beauty-pictures-24fa-crawling
-Python脚本获取 24fa 和 rucidongren 美女图片下载
+Python脚本获取 24fa 和 ~~rucidongren~~ xerocos.com 美女图片下载
+~~rucidongren.neocities.org~~ 网站被爬废了，换用  xerocos.com 网站脚本
 
 ![Watchers](https://img.shields.io/github/watchers/smallflowercat1995/Beauty-pictures-24fa-crawling) ![Stars](https://img.shields.io/github/stars/smallflowercat1995/Beauty-pictures-24fa-crawling) ![Forks](https://img.shields.io/github/forks/smallflowercat1995/Beauty-pictures-24fa-crawling) ![Vistors](https://visitor-badge.laobi.icu/badge?page_id=smallflowercat1995.Python-script-EEBBK-learning-computer-H6-learning-materials-download) ![LICENSE](https://img.shields.io/badge/license-CC%20BY--SA%204.0-green.svg)
 <a href="https://star-history.com/#smallflowercat1995/Beauty-pictures-24fa-crawling&Date">
