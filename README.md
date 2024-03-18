@@ -14,7 +14,7 @@ Python脚本获取 24fa 和 ~~rucidongren~~ xerocos.com 美女图片下载
 # 目录结构：
     .
     ├── 24fa爬美图.py                                # 24fa 链接的Python脚本
-    ├── rucidongren爬美图.py                         # rucidongren 链接的Python脚本
+    ├── xerocos.com爬美图.py                         # xerocos.com 链接的Python脚本
     └── README.md                                   # 这个是说明文件   
 
 # 起因：
