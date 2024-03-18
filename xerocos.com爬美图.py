@@ -143,11 +143,11 @@ for i in range(1, a_pager + 1):
                 # 拼接 a_url+c_url 对应的链接并请求 若为 200 且有内容则返回 c_content
                 c_url = a_url + c_urls[l]
                 c_content = request_with_retry(c_url)
-                print(f'第{l+1}条网址：{c_url}')
                 # 从 c_content 中最后一个 <div class="flex items-center my-2 flex-wrap"></div> 元素中获取最后一个 <a rel="" class="" href=""></a> 元素并得到文本值总页数(比如得到了 2 则返回总页数 2) c_pager ，如果没有获取到 <div class="flex items-center my-2 flex-wrap"></div> 则说明只有1页默认返回 1 即 c_pager=1
                 soup = BeautifulSoup(c_content, 'html.parser')
                 last_page_link = soup.select('div.flex.items-center.my-2.flex-wrap a[rel][class][href]')
                 c_pager = int(last_page_link[-1].text) if last_page_link else 1
+                print(f'第{l+1}条，网址：{c_url}，总页数：{c_pager}')
                 # 从 1 开始循环便利总页数到 c_pager 范围 [1,c_pager+1]
                 for m in range(1, c_pager + 1):
                     # 当为 1 则拼接 a_url+c_url 对应的链接赋值给 a_c_pager_url ，将 c_content 赋值给 a_c_pager_url_content
