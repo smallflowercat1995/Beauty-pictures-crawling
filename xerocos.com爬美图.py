@@ -29,7 +29,7 @@
     创建对应的 c_name 目录并进入目录，如果存在则不创建目录直接进入目录
     拼接 a_url+c_url 对应的链接并请求 若为 200 且有内容则返回 c_content
 
-    从 c_content 中最后一个 <div class="flex items-center my-2 flex-wrap"></div> 元素中获取最后一个 <a rel="" class="" href="" one-link-mark=""></a> 元素并得到文本值总页数(比如得到了 2 则返回总页数 2) c_pager ，如果没有获取到 <div class="flex items-center my-2 flex-wrap"></div> 则说明只有1页默认返回 1 即 c_pager=1
+    从 c_content 中最后一个 <div class="flex items-center my-2 flex-wrap"></div> 元素中获取最后一个 <a rel="" class="" href=""></a> 元素并得到文本值总页数(比如得到了 2 则返回总页数 2) c_pager ，如果没有获取到 <div class="flex items-center my-2 flex-wrap"></div> 则说明只有1页默认返回 1 即 c_pager=1
 
     从 1 开始循环便利总页数到 c_pager 范围 [1,c_pager+1]
     当为 1 则拼接 a_url+c_url 对应的链接赋值给 a_c_pager_url ，将 c_content 赋值给 a_c_pager_url_content
@@ -144,10 +144,10 @@ for i in range(1, a_pager + 1):
                 c_url = a_url + c_urls[l]
                 c_content = request_with_retry(c_url)
                 print(f'第{l+1}条网址：{c_url}')
-                # 从 c_content 中最后一个 <div class="flex items-center my-2 flex-wrap"></div> 元素中获取最后一个 <a rel="" class="" href="" one-link-mark=""></a> 元素并得到文本值总页数(比如得到了 2 则返回总页数 2) c_pager ，如果没有获取到 <div class="flex items-center my-2 flex-wrap"></div> 则说明只有1页默认返回 1 即 c_pager=1
+                # 从 c_content 中最后一个 <div class="flex items-center my-2 flex-wrap"></div> 元素中获取最后一个 <a rel="" class="" href=""></a> 元素并得到文本值总页数(比如得到了 2 则返回总页数 2) c_pager ，如果没有获取到 <div class="flex items-center my-2 flex-wrap"></div> 则说明只有1页默认返回 1 即 c_pager=1
                 soup = BeautifulSoup(c_content, 'html.parser')
-                last_page_link = soup.select_one('div.flex.items-center.my-2.flex-wrap a[rel][class][href][one-link-mark]')
-                c_pager = int(last_page_link.text) if last_page_link else 1
+                last_page_link = soup.select('div.flex.items-center.my-2.flex-wrap a[rel][class][href]')
+                c_pager = int(last_page_link[-1].text) if last_page_link else 1
                 # 从 1 开始循环便利总页数到 c_pager 范围 [1,c_pager+1]
                 for m in range(1, c_pager + 1):
                     # 当为 1 则拼接 a_url+c_url 对应的链接赋值给 a_c_pager_url ，将 c_content 赋值给 a_c_pager_url_content
