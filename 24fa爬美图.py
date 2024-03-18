@@ -145,7 +145,10 @@ for i in range(1, a_pager + 1):
                 b_pager_content = request_with_retry(b_url_pager)
                 if b_pager_content is None:
                     print(f"Failed to get content from b_url_pager: {b_url_pager}")
-                    continue
+                    b_pager_content = request_with_retry(b_url_pager)
+                elif "window.location.href" in str(b_pager_content):
+                    print("true,window.location.href in this!try again!")
+                    b_pager_content = request_with_retry(b_url_pager)
             # 从 b_pager_content 中的 <div id="content"></div> 中匹配获得 upload 开头 .jpg_gzip.aspx 结尾的全部文本 c_text 并统计数量 c_count
             b_pager_soup = BeautifulSoup(b_pager_content, 'html.parser')
             c_text = [img['src'] for img in b_pager_soup.find('div', id='content').find_all('img') if img['src'].startswith('upload/') and img['src'].endswith('.jpg_gzip.aspx')]
