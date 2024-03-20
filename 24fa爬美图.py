@@ -124,10 +124,10 @@ for i in range(1, a_pager + 1):
         while True:
             if b_content is None:
                 print(f"Failed to get content from b_url: {b_url}")
-                b_pager_content = request_with_retry(b_url)
+                b_content = request_with_retry(b_url)
             elif "window.location.href" in str(b_content):
                 print(f"true,window.location.href in this!try again: {b_url} !")
-                b_pager_content = request_with_retry(b_url)
+                b_content = request_with_retry(b_url)
             else:
                 break
         # 从 b_content 中的 <div class="pager"></div> 中获得倒数第3个 <li></li> 元素获取文本值总页数 b_pager
