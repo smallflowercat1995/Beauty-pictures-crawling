@@ -1,6 +1,7 @@
 # 思路
 '''
     在脚本所在目录下创建 美女图集 文件夹，存在则忽略，并进入文件夹,创建重试函数，为了规避网络问题导致的 tls 报错，并且使用脚本实现需求，
+    
     定义 url 为 https://www.248.one/
     拼接 url 和 c49.aspx 得到 a_url
     请求 a_url 若为 200 且有内容则返回 a_content
@@ -96,10 +97,15 @@ for i in range(1, a_pager + 1):
         
         # 请求 a_url_pager 若为 200 且有内容则返回 a_pager_content
         a_pager_content = request_with_retry(a_url_pager)
-        if a_pager_content is None:
-            print(f"Failed to get content from a_url_pager: {a_url_pager}")
-            continue
-    
+        while True:
+            if a_pager_content is None:
+                print(f"Failed to get content from a_url_pager: {a_url_pager}")
+                a_pager_content = request_with_retry(a_url_pager)
+            elif "window.location.href" in str(b_pager_content):
+                print(f"true,window.location.href in this!try again: {a_url_pager}!")
+                a_pager_content = request_with_retry(a_url_pager)
+            else:
+                break
     a_pager_soup = BeautifulSoup(a_pager_content, 'html.parser')
     # 从 a_pager_content 中的 <div class="pager"></div> 中匹配获得以下两个内容
     # n 开头 .aspx 结尾的全部文本，标题 b_title ，b_text，并统计总数量 b_count
